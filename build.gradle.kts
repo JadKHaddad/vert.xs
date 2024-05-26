@@ -32,6 +32,7 @@ dependencies {
   implementation("io.vertx:vertx-web-client")
   implementation("io.vertx:vertx-web")
   implementation("com.fasterxml.jackson.core:jackson-databind:2.0.1")
+  implementation("com.beust:jcommander:1.7")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }

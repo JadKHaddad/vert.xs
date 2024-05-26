@@ -1,5 +1,6 @@
 package com.verticles;
 
+import com.beust.jcommander.JCommander;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -16,14 +17,44 @@ public class MainVerticle extends AbstractVerticle {
   private static final String API_KEY_HEADER = "X-Api-Key";
   private static final String AUTHORIZED_USER = "authorized-user";
   private static final String USED_API_KEY = "used-api-key";
-  private final Set<String> apiKeys = new HashSet<>(Arrays.asList("expected-value-1", "expected-value-2"));
+  private final Set<String> apiKeys = new HashSet<>();
   private final Map<String, String> users = new HashMap<>();
   private static final Logger logger = LoggerFactory.getLogger(MainVerticle.class);
 
   @Override
   public void start() throws Exception {
-    users.put("user1", "password1");
-    users.put("user2", "password2");
+    Args parsedArgs = new Args();
+
+    // TODO: Test this thing
+    String[] args = vertx.getOrCreateContext().config().getString("args", "").trim().split("\\s+");
+    if (args.length == 1 && args[0].isEmpty()) {
+      args = new String[0];
+    }
+
+    String[] testArgs = {
+      "-api-keys=key3,key4",
+      "-users=user3:password3,user4:password4"
+    };
+
+    logger.info("args: " + Arrays.toString(args));
+
+    JCommander jCommander = new JCommander(parsedArgs);
+    jCommander.setDefaultProvider(new DefaultProvider());
+
+    try {
+      jCommander.parse(testArgs);
+    }
+    catch (Exception e) {
+      logger.error("Error parsing arguments: " + e.getMessage());
+      jCommander.usage();
+      System.exit(1);
+    }
+
+    apiKeys.addAll(parsedArgs.getApiKeys());
+    users.putAll(parsedArgs.getUsers());
+
+    logger.info("Api keys: " + apiKeys);
+    logger.info("Users: " + users);
 
     Router router = Router.router(vertx);
 
